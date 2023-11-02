@@ -401,14 +401,16 @@ static int rockchip_pcie_host_init_port(struct rockchip_pcie *rockchip)
 					 status, PCIE_LINK_IS_GEN2(status), 20,
 					 500 * USEC_PER_MSEC);
 		if (err)
-			dev_dbg(dev, "PCIe link training gen2 timeout, fall back to gen1!\n");
+			dev_info(dev, "PCIe link training gen2 timeout, fall back to gen1!\n");
+		else
+			dev_info(dev, "PCIe link training gen2 success!\n");
 	}
 
 	/* Check the final link width from negotiated lane counter from MGMT */
 	status = rockchip_pcie_read(rockchip, PCIE_CORE_CTRL);
 	status = 0x1 << ((status & PCIE_CORE_PL_CONF_LANE_MASK) >>
 			  PCIE_CORE_PL_CONF_LANE_SHIFT);
-	dev_dbg(dev, "current link width is x%d\n", status);
+	dev_info(dev, "current link width is x%d\n", status);
 
 	/* Power off unused lane(s) */
 	rockchip->lanes_map = rockchip_pcie_lane_map(rockchip);
