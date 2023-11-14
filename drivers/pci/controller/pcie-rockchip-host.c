@@ -336,8 +336,9 @@ static int rockchip_pcie_host_init_port(struct rockchip_pcie *rockchip)
 	struct device *dev = rockchip->dev;
 	int err, i = MAX_LANE_NUM;
 	u32 status;
-	int timeouts = 500;
+	int timeouts = 1000;
 
+retrian_gen1:
 	gpiod_set_value_cansleep(rockchip->ep_gpio, 0);
 
 	err = rockchip_pcie_init_port(rockchip);
@@ -399,11 +400,16 @@ static int rockchip_pcie_host_init_port(struct rockchip_pcie *rockchip)
 
 		err = readl_poll_timeout(rockchip->apb_base + PCIE_CORE_CTRL,
 					 status, PCIE_LINK_IS_GEN2(status), 20,
-					 500 * USEC_PER_MSEC);
+					 timeouts * USEC_PER_MSEC);
 		if (err)
+		{
 			dev_info(dev, "PCIe link training gen2 timeout, fall back to gen1!\n");
+			goto err_power_off_phy;
+		}
 		else
+		{
 			dev_info(dev, "PCIe link training gen2 success!\n");
+		}
 	}
 
 	/* Check the final link width from negotiated lane counter from MGMT */
@@ -456,6 +462,11 @@ err_power_off_phy:
 	i = MAX_LANE_NUM;
 	while (i--)
 		phy_exit(rockchip->phys[i]);
+	if (rockchip->link_gen == 2)
+	{
+		rockchip->link_gen = 1;
+		goto retrian_gen1;
+	}
 	return err;
 }
 

@@ -229,17 +229,13 @@ int rockchip_pcie_init_port(struct rockchip_pcie *rockchip)
 		dev_err(dev, "deassert pclk_rst err %d\n", err);
 		goto err_exit_phy;
 	}
-#if 0
+
 	if (rockchip->link_gen == 2)
 		rockchip_pcie_write(rockchip, PCIE_CLIENT_GEN_SEL_2,
 				    PCIE_CLIENT_CONFIG);
 	else
 		rockchip_pcie_write(rockchip, PCIE_CLIENT_GEN_SEL_1,
 				    PCIE_CLIENT_CONFIG);
-#else
-	rockchip_pcie_write(rockchip, PCIE_CLIENT_GEN_SEL_1,
-			    PCIE_CLIENT_CONFIG);
-#endif
 
 	regs = PCIE_CLIENT_LINK_TRAIN_ENABLE | PCIE_CLIENT_ARI_ENABLE |
 	       PCIE_CLIENT_CONF_LANE_NUM(rockchip->lanes);
